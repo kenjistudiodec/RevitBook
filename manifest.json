@@ -1,7 +1,7 @@
 {
   "id": "/RevitBook/",
-  "name": "SIMPEL-PAY",
-  "short_name": "SIMPEL-PAY",
+  "name": "RevitBook",
+  "short_name": "RevitBook",
   "start_url": "/RevitBook/index.html",
   "scope": "/RevitBook/",
   "display": "standalone",
