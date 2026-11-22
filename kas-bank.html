@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kas Bank — RevitBook</title>
+<link rel="icon" type="image/png" href="logo.png">
+<style>
+dialog{margin:auto;border:0;border-radius:22px;padding:24px;width:min(440px,92vw);color:var(--text);background:var(--card);backdrop-filter:saturate(200%) blur(28px);-webkit-backdrop-filter:saturate(200%) blur(28px);box-shadow:var(--shadow)}
+dialog::backdrop{background:rgba(0,0,0,.35);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+dialog h2{font-size:20px;text-align:center;margin-bottom:18px}
+dialog .f{margin-bottom:14px}
+dialog input{width:100%;height:42px;padding:0 12px}
+dialog .bar{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}
+dialog .bar .btn{width:100%;height:42px;padding:0}
+dialog .msg{text-align:center}
+.btn.sec{background:var(--track);color:var(--text);box-shadow:none}
+.tools{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:12px;padding:16px 20px;margin-bottom:16px}
+.tools input{width:auto}
+.tools .msg:empty{display:none}
+/* Di layar: tabel riwayat saja. Header sekolah, judul, dan tanda tangan hanya muncul saat dicetak. */
+#bankDoc .hdr,#bankDoc .title,#bankDoc .subt,#bankDoc .sign{display:none}
+@media print{#bankDoc .hdr,#bankDoc .sign{display:grid}#bankDoc .title,#bankDoc .subt{display:block}}
+</style>
+</head>
+<body>
+<script src="config.js"></script>
+<script src="kas-common.js"></script>
+<script>
+(async function(){
+  const main=shell('Buku Bank','Input penerimaan dana. Penarikan tunai dari Kas Tunai dan pembayaran bermetode Transfer tampil otomatis sebagai pengeluaran.');
+  $('chip').textContent='Buku Bank (BB)';
+  await loadSekolah();
+  main.insertAdjacentHTML('beforeend',`
+  <section class="stats noprint" id="stats"></section>
+  <section class="panel box" id="bankDoc"><h2 class="noprint">Riwayat Buku Bank</h2>${bukuHTML('BUKU BANK (BB)')}</section>
+  <dialog id="dlg" aria-labelledby="dlgT">
+    <form id="frm" method="dialog">
+      <h2 id="dlgT">Input penerimaan</h2>
+      <div class="f"><label for="i_tgl">Tanggal</label><input id="i_tgl" type="date" required></div>
+      <div class="f"><label for="i_uraian">Uraian</label><input id="i_uraian" placeholder="Mis. Penerimaan dana BOSP tahap 1" required></div>
+      <div class="f"><label for="i_bukti">No Bukti</label><input id="i_bukti"></div>
+      <div class="f"><label for="i_jml">Debet/Penerimaan (Rp)</label><input id="i_jml" type="number" min="1" step="1" required></div>
+      <div class="msg" id="msgm" role="alert"></div>
+      <div class="bar"><button class="btn sec" type="button" id="batal">Batal</button><button class="btn" type="submit" id="simpan">Simpan penerimaan</button></div>
+    </form>
+  </dialog>`);
+  document.querySelector('.dock .d').insertAdjacentHTML('afterend','<button class="d" type="button" id="btnTerima"><span class="ic" style="background:linear-gradient(160deg,#22d3ee,#0891b2)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>Penerimaan</button>');
+  isiBuku();
+  moneyInput($('i_jml'));
+  const dlg=$('dlg');let editId=null;
+  const bukaDlg=r=>{editId=r?r.id:null;$('frm').reset();$('dlgT').textContent=r?'Edit penerimaan':'Input penerimaan';$('simpan').textContent=r?'Simpan perubahan':'Simpan penerimaan';$('msgm').textContent='';
+    if(r){$('i_tgl').value=r.tanggal;$('i_uraian').value=r.uraian;$('i_bukti').value=r.no_bukti;$('i_jml').value=rp(r.debet)}else $('i_tgl').value=hari();
+    dlg.showModal();$('i_uraian').focus()};
+  const muat=()=>renderBuku('buku_bank',ymNow(),r=>r.kas_tunai_id?'Otomatis dari Kas Tunai':r.transaksi_id?'Otomatis dari Transaksi Pembayaran':'',async id=>{try{await api('buku_bank?id=eq.'+id,'DELETE');muat()}catch(e){$('msg').textContent=e.message}},bukaDlg);
+  initTabs(muat);
+  $('btnTerima').onclick=()=>bukaDlg(null);
+  $('batal').onclick=()=>dlg.close();
+  dlg.addEventListener('click',e=>{if(e.target===dlg)dlg.close()});
+  $('frm').onsubmit=async e=>{
+    e.preventDefault();
+    const jml=angka($('i_jml')),u=$('i_uraian').value.trim();$('msgm').textContent='';
+    if(!$('i_tgl').value||!u||!(jml>0)){$('msgm').textContent='Lengkapi tanggal, uraian, dan jumlah penerimaan.';return}
+    $('simpan').disabled=true;
+    const body={tanggal:$('i_tgl').value,uraian:u,no_bukti:$('i_bukti').value.trim(),debet:jml,kredit:0};
+    try{if(editId)await api('buku_bank?id=eq.'+editId,'PATCH',body);else await api('buku_bank','POST',body);
+      gotoTanggal($('i_tgl').value);$('frm').reset();dlg.close();muat()}
+    catch(err){$('msgm').textContent='Gagal menyimpan: '+err.message}
+    $('simpan').disabled=false;
+  };
+  muat();
+})();
+</script>
+</body>
+</html>

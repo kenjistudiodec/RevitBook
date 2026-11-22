@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Buku Kas Umum — RevitBook</title>
+<link rel="icon" type="image/png" href="logo.png">
+<style>
+dialog{margin:auto;border:0;border-radius:22px;padding:24px;width:min(440px,92vw);color:var(--text);background:var(--card);backdrop-filter:saturate(200%) blur(28px);-webkit-backdrop-filter:saturate(200%) blur(28px);box-shadow:var(--shadow)}
+dialog::backdrop{background:rgba(0,0,0,.35);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+dialog h2{font-size:20px;text-align:center;margin-bottom:18px}
+dialog .bar{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}
+dialog .bar .btn{width:100%;height:42px;padding:0}
+.btn.sec{background:var(--track);color:var(--text);box-shadow:none}
+.src{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:99px;white-space:nowrap}
+.src.bk{background:rgba(0,184,217,.16);color:#0891b2}
+.src.tn{background:rgba(255,94,122,.16);color:#e11d48}
+@media(prefers-color-scheme:dark){.src.bk{color:#22d3ee}.src.tn{color:#ff7a95}}
+.stat.total{display:flex;align-items:center;gap:16px;margin-bottom:14px;padding:18px 20px}.stat.total .ic{margin:0;width:48px;height:48px;border-radius:13px;flex:none}.stat.total .ic svg{width:24px;height:24px}.stat.total b{font-size:clamp(24px,3.4vw,34px)}
+#tabs{display:grid;grid-template-columns:repeat(auto-fit,minmax(54px,1fr));gap:6px;margin-bottom:10px}
+#tabs .tab{text-align:center;padding:7px 4px}
+.filters{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px}
+.filters:has(#thn[hidden]){grid-template-columns:1fr}
+.filters select{width:100%;margin:0}
+@media(min-width:900px){#tabs{grid-template-columns:1.9fr repeat(12,1fr)}}
+.note{display:block;font-size:11px;color:var(--muted);font-style:italic}
+.foot{font-size:12px;color:var(--muted);margin-top:10px}
+</style>
+</head>
+<body>
+<script src="config.js"></script>
+<script src="kas-common.js"></script>
+<script>
+(async function(){
+  const main=shell('Buku Kas Umum','Gabungan riwayat Buku Bank dan Kas Tunai dalam satu buku. Data hanya ditampilkan; ubah data di menu Kas Bank atau Kas Tunai.');
+  $('chip').textContent='Buku Kas Umum (BKU)';
+  await loadSekolah();
+  JUDUL='BUKU KAS UMUM (BKU)';
+  IC.bank='<path d="M3 10l9-6 9 6H3zM5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 21h18"/>';
+  IC.cash='<rect x="2.5" y="6" width="19" height="12" rx="2.5"/><circle cx="12" cy="12" r="2.8"/><path d="M6 9.5v.01M18 14.5v.01"/>';
+  main.insertAdjacentHTML('beforeend',`
+  <section class="panel stat total noprint" id="total"></section>
+  <section class="stats noprint" id="stats"></section>
+  <section class="panel box" id="bkuDoc"><h2 class="noprint">Riwayat Buku Kas Umum</h2>
+    <div class="tabs noprint" id="tabs" role="tablist" aria-label="Filter bulan"><button class="tab on" type="button" role="tab" data-m="">Semua Bulan</button>${['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'].map((b,i)=>`<button class="tab" type="button" role="tab" data-m="${i+1}">${b}</button>`).join('')}</div>
+    <div class="filters noprint"><select id="kasF" aria-label="Filter kas"><option value="">Semua Kas</option><option value="bk">Kas Bank</option><option value="tn">Kas Tunai</option></select><select id="thn" aria-label="Tahun" hidden><option>${new Date().getFullYear()}</option></select></div>
+    <div class="scroll"><table><thead><tr><th>No</th><th>Tanggal</th><th>Kas</th><th>Uraian</th><th>No Bukti</th><th>Debet/Penerimaan (Rp.)</th><th>Kredit/Pengeluaran (Rp.)</th><th>Saldo (Rp.)</th></tr></thead><tbody id="tb"></tbody><tfoot id="tf"></tfoot></table></div>
+    <div class="foot noprint">Penarikan tunai dari bank (mutasi antar kas) tetap tampil dan memengaruhi saldo masing-masing kas, tetapi tidak dihitung pada Total Penerimaan/Pengeluaran agar tidak terhitung ganda.</div>
+    <div class="msg noprint" id="msg" role="alert"></div>
+  </section>`);
+  isiBuku();
+
+  async function muat(){
+    const ym=ymNow(),all=!ym,now=new Date();
+    let y=now.getFullYear(),m=now.getMonth()+1;if(!all)[y,m]=ym.split('-').map(Number);
+    const akhir=all?now.getDate():new Date(y,m,0).getDate(),first=all?'':`${y}-${pad(m)}-01`,last=`${y}-${pad(m)}-${pad(akhir)}`;
+    const bulanTxt=all?'Semua bulan':BLN[m-1]+' '+y,tglTxt=akhir+' '+BLN[m-1]+' '+y,per=all?'seluruh transaksi':BLN[m-1]+' '+y;
+    let bank,tunai;
+    try{[bank,tunai]=await Promise.all([api('buku_bank?select=*&order=tanggal.asc,created_at.asc'),api('kas_tunai?select=*&order=tanggal.asc,created_at.asc')])}
+    catch(e){$('tb').innerHTML='<tr><td colspan="8" class="empty">Gagal memuat: '+esc(e.message)+'</td></tr>';return}
+    const data=[
+      ...bank.map(r=>({...r,src:'bk',mut:!!r.kas_tunai_id})),
+      ...tunai.map(r=>({...r,src:'tn',mut:r.jenis==='penarikan'&&!r.transaksi_id}))
+    ].sort((a,b)=>a.tanggal<b.tanggal?-1:a.tanggal>b.tanggal?1:String(a.created_at||'')<String(b.created_at||'')?-1:String(a.created_at||'')>String(b.created_at||'')?1:(a.src==='bk'?-1:1));
+    fillYears(data);
+    const F=$('kasF').value;
+    let saldo=0,sb=0,st=0,awal=0,awb=0,awt=0,sd=0,sk=0,no=0,nd=0,nk=0,sdA=0,skA=0,fs=0,pr=[],h='';
+    for(const r of data){
+      if(!all&&r.tanggal>last)continue;
+      const d=Number(r.debet)||0,k=Number(r.kredit)||0;
+      saldo+=d-k;if(r.src==='bk')sb+=d-k;else st+=d-k;
+      const tampil=!F||r.src===F;
+      if(tampil)fs+=d-k;
+      if(r.tanggal<first){awal=fs;awb=sb;awt=st;continue}
+      if(!r.mut){sdA+=d;skA+=k;if(d>0)nd++;if(k>0)nk++}
+      if(!tampil)continue;
+      /* Semua Kas: mutasi antar kas tidak dihitung ganda; per kas: mutasi dihitung karena memang mengubah saldo kas itu */
+      if(F||!r.mut){sd+=d;sk+=k}
+      const nama=r.src==='bk'?'Bank':'Tunai';
+      pr.push({no:no+1,tgl:tgl(r.tanggal),uraian:(F?'':'['+nama+'] ')+r.uraian,bukti:r.no_bukti,debet:d,kredit:k,saldo:fs});
+      h+=`<tr><td class="c">${++no}</td><td class="c">${tgl(r.tanggal)}</td><td class="c"><span class="src ${r.src}">${nama}</span></td><td>${esc(r.uraian)}${r.mut?'<span class="note">Mutasi antar kas (Bank ↔ Tunai)</span>':''}</td><td>${esc(r.no_bukti)}</td><td class="n dbt">${d>0?rp(d):''}</td><td class="n krd">${k>0?rp(k):''}</td><td class="n">${rp(fs)}</td></tr>`;
+    }
+    if(awal)pr.unshift({op:1,saldo:awal});
+    JUDUL='BUKU KAS UMUM (BKU)'+(F==='bk'?' — KAS BANK':F==='tn'?' — KAS TUNAI':'');
+    PV={bulan:bulanTxt,tgl:tglTxt,rows:pr,sd,sk,saldo:fs};
+    if(awal)h=`<tr class="op"><td></td><td></td><td></td><td>Saldo bulan lalu</td><td></td><td></td><td></td><td class="n">${rp(awal)}</td></tr>`+h;
+    $('tb').innerHTML=h||'<tr><td colspan="8" class="empty">Belum ada transaksi.</td></tr>';
+    $('tf').innerHTML=`<tr class="tot"><td colspan="5" class="c">Jumlah</td><td class="n dbt">${rp(sd)}</td><td class="n krd">${rp(sk)}</td><td class="n">${rp(fs)}</td></tr>`;
+    $('total').innerHTML=`<div class="ic" style="background:linear-gradient(160deg,#a78bfa,#5e5ce6)">${svg('wallet')}</div><div><small>Total Saldo Akhir</small><b class="${saldo<0?'neg':''}">${rp0(saldo)}</b><span class="delta">Gabungan Kas Bank ${rp0(sb)} + Kas Tunai ${rp0(st)} · ${per}</span></div>`;
+    const kt=[['Total Penerimaan',rp0(sdA),nd+' transaksi penerimaan','down','linear-gradient(160deg,#5be37a,#1fa23c)',''],
+      ['Total Pengeluaran',rp0(skA),nk+' transaksi pengeluaran','up','linear-gradient(160deg,#ff7a8a,#e11d48)',''],
+      ['Saldo Kas Bank',rp0(sb),'Saldo akhir '+per,'bank','linear-gradient(160deg,#22d3ee,#0891b2)',sb<0?'neg':''],
+      ['Saldo Kas Tunai',rp0(st),'Saldo akhir '+per,'cash','linear-gradient(160deg,#ffb454,#f0780a)',st<0?'neg':'']];
+    $('stats').innerHTML=kt.map(x=>`<div class="panel stat"><div class="ic" style="background:${x[4]}">${svg(x[3])}</div><small>${x[0]}</small><b class="${x[5]}">${x[1]}</b><span class="delta">${x[2]}</span></div>`).join('');
+  }
+  initTabs(muat);
+  $('kasF').onchange=muat;
+  muat();
+})();
+</script>
+</body>
+</html>

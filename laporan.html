@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Laporan — RevitBook</title>
+<link rel="icon" type="image/png" href="logo.png">
+<style>
+:root{
+  color-scheme:light;
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+  --text:#1d1d1f;--muted:#6e6e73;--accent:#0a7aff;--green:#28c840;--orange:#ff9f0a;--red:#ff453a;--purple:#af52de;
+  --glass:rgba(255,255,255,.72);--card:rgba(255,255,255,.88);--line:rgba(0,0,0,.1);--bar:rgba(255,255,255,.6);--track:rgba(120,120,128,.16);
+  --wall:linear-gradient(135deg,#9cbcff 0%,#c4b0fb 40%,#f9c4de 72%,#fde3bd 100%);
+  --shadow:0 14px 40px rgba(30,30,80,.2),0 0 0 .5px rgba(0,0,0,.14);
+}
+@media not all{:root{--text:#f5f5f7;--muted:#a1a1a6;--accent:#2f8bff;--glass:rgba(40,40,46,.7);--card:rgba(44,44,50,.86);
+  --line:rgba(255,255,255,.12);--bar:rgba(20,20,26,.55);--track:rgba(255,255,255,.14);
+  --wall:linear-gradient(135deg,#1e2a5a 0%,#3b2a6e 40%,#6b2d5c 75%,#7a4a3a 100%);--shadow:0 14px 40px rgba(0,0,0,.5),0 0 0 .5px rgba(255,255,255,.14)}}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);color:var(--text);background:var(--wall) fixed;line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh;padding-bottom:calc(120px + env(safe-area-inset-bottom))}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:10px}
+
+/* Navbar */
+.nav{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px;padding:8px 20px;padding-top:calc(8px + env(safe-area-inset-top));
+  background:var(--bar);backdrop-filter:saturate(180%) blur(24px);-webkit-backdrop-filter:saturate(180%) blur(24px);border-bottom:.5px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:-.01em;min-width:0}
+.sch-logo{flex:none;width:36px;height:36px;border-radius:10px;display:grid;place-items:center;color:#fff;overflow:hidden;
+  background:linear-gradient(160deg,#4da3ff,#0a5fe0);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 2px 6px rgba(0,0,0,.22)}
+.sch-logo svg{width:20px;height:20px}
+.sch-logo img{width:100%;height:100%;object-fit:contain}
+.sch-name{display:block;min-width:0;line-height:1.2}
+.sch-name b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sch-name small{display:block;font-size:11px;font-weight:500;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:520px){.sch-name small{display:none}.sch-name b{font-size:13px}}
+.sp{flex:1}
+.acct{display:flex;align-items:center;gap:10px;padding:4px 6px 4px 12px;border-radius:99px;background:var(--track)}
+.acct div{text-align:right;line-height:1.2}
+.acct b{display:block;font-size:13px;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.acct small{font-size:11px;color:var(--muted)}
+.avatar{flex:none;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:700;color:#fff;background:linear-gradient(160deg,#4da3ff,#7c3aed);overflow:hidden}
+.avatar img{width:100%;height:100%;object-fit:cover}
+
+/* Layout */
+.wrap{max-width:none;margin:0;padding:22px min(150px,12vw)}
+.head{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:10px;margin-bottom:18px}
+h1{font-size:clamp(26px,4.5vw,36px);letter-spacing:-.025em;line-height:1.1}
+.head p{color:var(--muted);font-size:14px;margin-top:4px}
+.chip{font-size:13px;font-weight:600;padding:6px 14px;border-radius:99px;background:var(--glass);box-shadow:0 0 0 .5px var(--line)}
+.panel{background:var(--glass);backdrop-filter:saturate(180%) blur(30px);-webkit-backdrop-filter:saturate(180%) blur(30px);border-radius:16px;box-shadow:var(--shadow)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px}
+.stat{padding:16px}
+.stat .ic{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;color:#fff;margin-bottom:10px}
+.stat .ic svg{width:18px;height:18px}
+.stat small{color:var(--muted);font-size:13px}
+.stat b{display:block;font-size:clamp(20px,2.6vw,26px);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.delta{font-size:12px;font-weight:600}.up{color:#1fa23c}.mid{color:#b86e00}
+@media not all{.up{color:#5be37a}.mid{color:#ffb454}}
+.box{padding:20px}
+.ph{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.ph .ic{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;color:#fff;flex:none}
+.ph .ic svg{width:18px;height:18px}
+.ph h2{font-size:18px;letter-spacing:-.01em;line-height:1.2}
+.cnt{margin-left:auto;font-size:12px;font-weight:600;color:var(--muted);background:var(--track);padding:3px 10px;border-radius:99px}
+.tw{overflow-x:auto;border-radius:12px;box-shadow:inset 0 0 0 .5px var(--line)}
+table{width:100%;border-collapse:collapse;font-size:14px;min-width:1500px}
+th{text-align:left;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding:11px 14px;background:rgba(120,120,128,.1);border-bottom:.5px solid var(--line);white-space:nowrap}
+td{padding:12px 14px;border-bottom:.5px solid var(--line);vertical-align:middle}
+tbody tr:hover{background:rgba(10,122,255,.06)}tbody tr:last-child td{border-bottom:0}
+.r{text-align:right}.nw{white-space:nowrap}.num{font-variant-numeric:tabular-nums}
+.uraian{min-width:240px;max-width:320px;color:var(--muted)}
+.kode{display:inline-block;font:600 12px ui-monospace,SFMono-Regular,Menlo,monospace;padding:3px 9px;border-radius:7px;background:var(--track)}
+.pct{display:inline-block;font-weight:700;color:#0a62d1;background:rgba(10,122,255,.12);padding:3px 11px;border-radius:99px}
+.lihat{font-size:13px;font-weight:600;padding:7px 14px;border-radius:9px;background:var(--accent);color:#fff;white-space:nowrap;transition:background .15s,transform .15s}
+.lihat:hover{background:#0062d6}.lihat:active{transform:scale(.96)}
+.state{padding:36px 16px;text-align:center;color:var(--muted)}
+
+/* Sticky footer dock */
+.dock{position:fixed!important;left:0;right:0;bottom:calc(10px + env(safe-area-inset-bottom));z-index:30;display:flex;justify-content:center;padding:0 12px;background:none;border:0;box-shadow:none;pointer-events:none;transform:translateZ(0);-webkit-transform:translateZ(0);will-change:transform}
+.dock nav{--text:#1d1d1f;--track:rgba(120,120,128,.16);color:var(--text);width:auto;max-width:100%;display:flex;justify-content:center;gap:6px;padding:8px 12px;pointer-events:auto;
+  background:rgba(255,255,255,.45);backdrop-filter:saturate(180%) blur(28px);-webkit-backdrop-filter:saturate(180%) blur(28px);
+  border:.5px solid rgba(255,255,255,.55);border-radius:32px;box-shadow:0 10px 30px rgba(30,30,80,.22),inset 0 1px 0 rgba(255,255,255,.5)}
+@media (prefers-color-scheme:dark){.dock nav{--text:#f5f5f7;--track:rgba(255,255,255,.14);background:rgba(40,40,46,.5);border-color:rgba(255,255,255,.14);box-shadow:0 10px 30px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.1)}}
+html,body{overflow-x:hidden}
+.d{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:92px;padding:8px 14px;border-radius:16px;font-size:12px;font-weight:600;transition:background .15s,transform .15s}
+.d:hover{background:var(--track);transform:translateY(-3px)}
+.d .ic{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;color:#fff;box-shadow:0 3px 8px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.35)}
+.d .ic svg{width:21px;height:21px}
+
+/* Modal detail order */
+.ov{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:calc(16px + env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom));background:rgba(0,0,0,0);visibility:hidden;pointer-events:none;transition:background .3s,visibility 0s linear .3s}
+.ov.open{background:rgba(20,20,40,.35);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);visibility:visible;pointer-events:auto;transition:background .3s,visibility 0s}
+.mcard{--text:#1d1d1f;--muted:#6e6e73;--line:rgba(0,0,0,.1);--track:rgba(120,120,128,.16);color:var(--text);width:min(520px,100%);max-height:calc(100vh - 32px - env(safe-area-inset-top) - env(safe-area-inset-bottom));max-height:calc(100dvh - 32px - env(safe-area-inset-top) - env(safe-area-inset-bottom));overflow:auto;background:rgba(255,255,255,.92);border-radius:16px;box-shadow:var(--shadow);padding:20px;opacity:0;transform:translateY(24px) scale(.94);transition:opacity .25s,transform .38s cubic-bezier(.2,.9,.25,1.15)}
+.ov.open .mcard{opacity:1;transform:none}
+.dl{display:grid;grid-template-columns:150px 1fr;gap:8px 12px;font-size:14px}
+.dl dt{color:var(--muted)}.dl dd{font-weight:500;word-break:break-word}
+.mfoot{display:flex;justify-content:flex-end;margin-top:18px}
+.btn{font-size:14px;font-weight:600;padding:9px 18px;min-height:40px;border-radius:10px;background:var(--track)}
+.btn:hover{background:rgba(120,120,128,.28)}
+
+/* Form pembayaran */
+.mcard.w{width:min(900px,100%)}
+.mcard h2.mt{font-size:18px;letter-spacing:-.01em;margin-bottom:14px}
+.fg2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.fg2 .full{grid-column:1/-1}
+label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}label i{color:var(--red);font-style:normal}
+.in{width:100%;font:inherit;font-size:14px;color:var(--text);padding:9px 11px;min-height:40px;border-radius:10px;border:0;background:rgba(255,255,255,.95);box-shadow:0 0 0 .5px var(--line),inset 0 1px 2px rgba(0,0,0,.06);transition:box-shadow .15s}
+.in:focus{outline:0;box-shadow:0 0 0 3px rgba(10,122,255,.4),0 0 0 1px var(--accent)}
+.in.bad{box-shadow:0 0 0 2px var(--red)}.in[readonly]{background:var(--track);color:var(--muted);cursor:not-allowed}
+textarea.in{resize:vertical;min-height:72px;line-height:1.45}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}.errm{font-size:12px;color:var(--red);margin-top:6px;display:none}.errm.show{display:block}
+.sec{display:flex;align-items:center;justify-content:space-between;margin:20px 0 10px}.sec h3{font-size:15px}
+.btn.sm{min-height:34px;padding:6px 14px;font-size:13px}.btn.blue{background:var(--accent);color:#fff}.btn.blue:hover{background:#0062d6}.btn:disabled{opacity:.6;cursor:progress}
+.iw{overflow-x:auto;border-radius:12px;box-shadow:inset 0 0 0 .5px var(--line);padding:10px;background:rgba(255,255,255,.5)}
+.ig{min-width:760px}.irow{display:grid;grid-template-columns:52px 1fr 90px 110px 140px 150px 36px;gap:8px;margin-bottom:8px;align-items:center}
+.irow.hd{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px}
+.irow .no,.irow .i-tot{text-align:right}.irow .no{text-align:center}
+.xb{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;color:var(--muted)}.xb:hover{background:var(--track);color:var(--red)}.xb svg{width:17px;height:17px}
+.gt{display:flex;justify-content:flex-end;gap:10px;margin-top:8px;font-size:14px}.gt b{font-variant-numeric:tabular-nums}
+.mfoot{gap:10px}.mfoot .btn{min-width:92px}
+.it{width:100%;border-collapse:collapse;font-size:13px;min-width:0}.it th{padding:8px 10px}.it td{padding:8px 10px}
+@media (max-width:640px){.fg2{grid-template-columns:1fr}}
+
+/* Detail order */
+.od{padding:0;overflow:auto}
+.od>*:not(.od-hd){margin-left:22px;margin-right:22px}
+.od-hd{display:flex;align-items:center;gap:12px;padding:18px 22px;margin-bottom:16px;border-bottom:.5px solid var(--line);position:sticky;top:0;z-index:2;background:rgba(255,255,255,.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+.od-ic{flex:none;width:42px;height:42px;border-radius:12px;display:grid;place-items:center;color:#fff;background:linear-gradient(160deg,#4da3ff,#0a5fe0);box-shadow:0 4px 10px rgba(10,98,224,.35),inset 0 1px 0 rgba(255,255,255,.4)}
+.od-ic svg{width:22px;height:22px}
+.od-t{min-width:0;flex:1}.od-t small{display:block;font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.od-t h2{font-size:19px;letter-spacing:-.01em;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.od-st{flex:none;font-size:12px;font-weight:700;padding:5px 12px;border-radius:99px}
+.od-st.s{background:rgba(40,200,64,.16);color:#1a8a30}.od-st.p{background:rgba(255,159,10,.18);color:#b86e00}
+.od-x{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:rgba(120,120,128,.2);color:var(--muted);transition:background .15s}
+.od-x:hover{background:rgba(120,120,128,.34);color:var(--text)}.od-x svg{width:16px;height:16px}
+.od-hero{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:18px 20px;border-radius:16px;color:#fff;background:linear-gradient(135deg,#4da3ff 0%,#6f5be8 55%,#9b5de5 100%);box-shadow:0 10px 24px rgba(80,70,200,.32),inset 0 1px 0 rgba(255,255,255,.35)}
+.od-hero small{display:block;font-size:12px;font-weight:600;opacity:.85;text-transform:uppercase;letter-spacing:.05em}
+.od-hero b{display:block;font-size:clamp(24px,5vw,32px);letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.2}
+.od-tag{font-size:13px;font-weight:700;padding:6px 14px;border-radius:99px;background:rgba(255,255,255,.22);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.4)}
+.od-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+.oc{padding:11px 14px;border-radius:12px;background:rgba(120,120,128,.09);min-width:0}
+.oc small{display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px}
+.oc b{display:block;font-size:14px;font-weight:600;word-break:break-word}.oc.full{grid-column:1/-1}.oc.full b{font-weight:500;line-height:1.5}
+.od-sec{display:flex;align-items:center;gap:10px;margin-top:20px;margin-bottom:10px}.od-sec h3{font-size:15px}.od-sec .cnt{margin-left:0}
+.od .it td,.od .it th{padding:10px 12px}.od .it tbody tr:nth-child(even){background:rgba(120,120,128,.05)}
+.nb{display:inline-grid;place-items:center;min-width:24px;height:24px;border-radius:8px;font-size:12px;font-weight:700;background:rgba(10,122,255,.12);color:#0a62d1}
+.od .it tfoot td{font-weight:700;background:rgba(10,122,255,.08);border-top:.5px solid var(--line);border-bottom:0}
+.od .mfoot{padding-bottom:20px}
+@media (max-width:640px){.od-grid{grid-template-columns:repeat(2,1fr)}.od>*:not(.od-hd){margin-left:14px;margin-right:14px}.od-hd{padding:14px}}
+
+/* Dropdown dokumen */
+.dd{margin-right:auto}
+.ddm{position:fixed;z-index:70;min-width:270px;padding:6px;border-radius:14px;background:rgba(255,255,255,.97);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);box-shadow:var(--shadow);display:none}
+.ddm.open{display:block}
+.ddm button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:9px 12px;border-radius:9px;font-size:14px;font-weight:500;color:#1d1d1f}
+.ddm button:hover,.ddm button:focus-visible{background:rgba(120,120,128,.16)}
+.ddm .n{flex:none;width:22px;height:22px;border-radius:7px;display:grid;place-items:center;font-size:11px;font-weight:700;background:rgba(10,122,255,.12);color:#0a62d1}
+
+/* Surat Order */
+.sr-card{width:min(880px,100%);padding:0;overflow:auto;max-height:calc(100vh - 32px - env(safe-area-inset-top) - env(safe-area-inset-bottom));max-height:calc(100dvh - 32px - env(safe-area-inset-top) - env(safe-area-inset-bottom))}
+.sr-tools{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:10px;padding:12px 16px;background:rgba(255,255,255,.96);border-bottom:.5px solid var(--line)}
+.sr-tools b{font-size:16px}.sr-tools .h{flex:1;font-size:12px;color:var(--muted);line-height:1.3}
+.sr-paper{margin:16px;background:#fff;color:#000;border:1px solid #000;font:12.5px/1.45 Tahoma,Verdana,"Segoe UI",sans-serif;box-shadow:0 4px 18px rgba(0,0,0,.15)}
+.sr-kop{display:flex;align-items:center;gap:10px;padding:10px 12px 8px}
+.sr-kt{flex:1;text-align:center;min-width:0}.sr-kt .b{font-weight:700;font-size:14px;line-height:1.3}.sr-kt .i{font-style:italic;font-size:10.5px;line-height:1.3}.sr-kt .u{font-size:10.5px;text-decoration:underline}
+.sr-logo{flex:none;width:60px;height:60px;display:block;overflow:hidden}
+.sr-logo img{display:block;width:100%;height:100%;object-fit:contain}
+.miss{color:#b3261e;font-style:italic;font-size:11px}
+.sr-hr{border:0;border-top:1.5px solid #000;margin:0 12px}
+.sr-title{text-align:center;padding:8px 12px 6px;font-size:13px}.sr-title .t{font-weight:700;text-decoration:underline;font-size:13.5px}
+.sr-info{padding:2px 12px}.sr-info .rw{display:grid;grid-template-columns:130px 1fr;gap:0 4px;padding:1px 0}
+.sr-info .rw>span:last-child{padding-left:2px}
+.sr-ln{border-top:1px solid #000;margin:6px 0}
+.sr-p{padding:6px 12px 8px}
+.sr-t{width:100%;border-collapse:collapse;table-layout:fixed;font-size:12px;min-width:0;border-top:1px solid #000;border-bottom:1px solid #000}
+.sr-t th{font-size:11px;font-weight:700;text-transform:none;letter-spacing:0;color:#000;text-align:center;background:none;border-bottom:1px solid #000;border-left:1px solid #000;padding:3px 6px}
+.sr-t td{border:0;border-left:1px solid #000;padding:3px 6px;vertical-align:top;word-break:break-word}
+.sr-t th:first-child,.sr-t td:first-child{border-left:0}
+.sr-t td.c{text-align:center}
+.sr-t tr.fill td{height:200px}
+.sr-ttd{margin:10px 12px 14px auto;width:min(300px,70%);text-align:left}
+.sr-ttd .sp{height:62px}
+.ed{outline:0;display:inline-block;min-width:24px;border-bottom:1px dashed #9db8e6;padding:0 2px;border-radius:2px;transition:background .15s}
+.sr-info .ed{display:inline}
+.ed:hover{background:#eef5ff}.ed:focus{background:#e3efff;border-bottom-color:#0a7aff}
+.ed:empty{background:#fff7d6;border-bottom-color:#e0b100}.ed:empty::before{content:attr(data-ph);color:#a08a2a;font-style:italic;font-weight:400}
+.sr-t td .ed{display:block;min-height:1.4em}
+@media (max-width:640px){.sr-paper{margin:8px;font-size:11px}.sr-logo{width:44px;height:44px}.sr-info .rw{grid-template-columns:90px 1fr}.sr-tools .h{display:none}}
+@media print{
+  @page{size:A4;margin:10mm}
+  body.ps>*:not(#mSurat){display:none!important}
+  body.ps #mSurat{position:static!important;display:block!important;visibility:visible!important;background:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;padding:0!important}
+  body.ps #mSurat .sr-card{max-height:none!important;overflow:visible!important;width:auto!important;box-shadow:none!important;background:none!important;opacity:1!important;transform:none!important}
+  body.ps .sr-tools{display:none!important}
+  body.ps .sr-paper{margin:0;box-shadow:none}
+  body.ps .ed{border:0!important;background:none!important}
+  body.ps .ed:empty::before{content:""!important}
+  body.ps .sr-logo.empty{visibility:hidden}
+  body.ps .sr-t{font-size:12px}
+  body.ps .sr-t th,body.ps .sr-t td{padding:3px 6px}
+  body.ps .sr-t th:last-child,body.ps .sr-t td:last-child{display:table-cell!important}
+  body.ps .sr-t tr.fill td{height:300px}
+}
+
+/* Toast */
+.toast{position:fixed;top:calc(52px + env(safe-area-inset-top));right:14px;z-index:60;max-width:min(340px,calc(100% - 28px));padding:12px 16px;border-radius:14px;background:var(--glass);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);box-shadow:var(--shadow);font-size:14px;transform:translateY(-20px);opacity:0;pointer-events:none;transition:.3s cubic-bezier(.2,.85,.25,1)}
+.toast.show{transform:none;opacity:1}
+
+@media (max-width:640px){.stats{grid-template-columns:1fr}}
+@media (max-width:520px){.acct div{display:none}.acct{padding:3px}.d{min-width:76px;padding:8px 10px}.wrap{padding:16px 5px}.nav{padding-left:5px;padding-right:5px}.dl{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media print{.nav,.dock,.toast,.ov,.lihat,th:last-child,td:last-child{display:none!important}body{background:#fff;padding:0}.wrap{padding:0}.panel{box-shadow:none;background:#fff}.tw{overflow:visible}table{min-width:0;font-size:9px}th,td{padding:5px 6px;color:#000}.stat{break-inside:avoid}}
+
+/* Transisi antar halaman */
+@view-transition{navigation:auto}
+.nav{view-transition-name:pt-nav}
+.dock{view-transition-name:pt-dock}
+@keyframes pt-out{to{opacity:0;transform:translateY(-8px) scale(.995)}}
+@keyframes pt-in{from{opacity:0;transform:translateY(12px) scale(.997)}}
+::view-transition-group(*){animation-duration:.35s}
+::view-transition-old(root){animation:.2s cubic-bezier(.4,0,1,1) both pt-out}
+::view-transition-new(root){animation:.4s cubic-bezier(.2,.8,.2,1) both pt-in}
+.pt-fb .wrap{animation:pt-in .4s cubic-bezier(.2,.8,.2,1) both}
+.pt-fb.pt-leave .wrap,.pt-fb.pt-leave .dock{opacity:0;transform:translateY(-8px);transition:opacity .2s ease,transform .2s ease}
+@media (prefers-reduced-motion:reduce){::view-transition-group(*),::view-transition-old(root),::view-transition-new(root),.pt-fb .wrap{animation:none!important}}
+
+/* Berkas dokumen: tab + kartu + tabel */
+#bkBox{margin-top:0}
+.bk-tw{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.bk-nav{flex:none;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:var(--track);color:var(--text);transition:background .15s,opacity .15s}
+.bk-nav:hover:not(:disabled){background:rgba(120,120,128,.28)}.bk-nav:disabled{opacity:.35;cursor:default}
+.bk-nav svg{width:18px;height:18px}
+.bk-tabs{flex:1;min-width:0;display:flex;gap:6px;overflow-x:auto;scroll-behavior:smooth;padding:4px;border-radius:14px;background:var(--track);scrollbar-width:none}
+.bk-tabs::-webkit-scrollbar{display:none}
+.bk-tab{flex:none;padding:8px 14px;border-radius:10px;font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap;transition:background .15s,color .15s}
+.bk-tab:hover{color:var(--text)}
+.bk-tab[aria-selected=true]{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(10,122,255,.35)}
+.bk-bar{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.bk-sq{position:relative;flex:1;min-width:220px}
+.bk-sq svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--muted);pointer-events:none}
+.bk-sq input{width:100%;font:inherit;font-size:14px;color:var(--text);padding:10px 14px 10px 36px;border-radius:12px;border:.5px solid var(--line);background:var(--card);outline:0}
+.bk-sq input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(10,122,255,.2)}
+.bk-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;margin-bottom:8px}
+.bk-card{padding:14px;border-radius:14px;background:var(--card);box-shadow:inset 0 0 0 .5px var(--line);display:flex;flex-direction:column;gap:6px;min-width:0}
+.bk-card .t{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.bk-card b{font-size:14px;letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bk-card .s{font-size:13px;color:var(--muted);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.bk-card .m{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--muted);margin-top:auto;padding-top:4px}
+.bk-more{font-size:12px;color:var(--muted);margin-bottom:14px}
+.bk-ok{color:#1fa23c;font-weight:700}.bk-no{color:var(--muted)}
+.bk-lg{display:inline-block;font-size:12px;font-weight:700;padding:3px 10px;border-radius:99px;background:rgba(255,159,10,.16);color:#b86e00}
+.bk-lg.full{background:rgba(40,200,64,.16);color:#1fa23c}
+table.dt{min-width:880px}
+#spBox{margin-top:16px}
+.lihat.alt{background:var(--track);color:var(--text)}.lihat.alt:hover{background:rgba(120,120,128,.28)}
+.lihat:disabled{opacity:.6;cursor:default}
+.bk-act{display:flex;gap:6px;justify-content:flex-end}
+.lihat{text-decoration:none;display:inline-block}
+
+/* Kartu berkas + modal checklist */
+.bk-y{width:auto;min-width:92px;font-weight:600}
+.bk-tm{flex:1 1 100%;min-width:0;max-width:100%;margin-bottom:0}
+.bk-f{display:flex;gap:6px;padding:4px;border-radius:14px;background:var(--track);flex:1 1 auto;min-width:0;overflow:hidden;justify-content:center}
+.bk-f::-webkit-scrollbar{display:none}
+.bk-f button{flex:none;white-space:nowrap;padding:8px 14px;border-radius:10px;font-size:13px;font-weight:600;color:var(--muted);transition:background .15s,color .15s}
+.bk-f button:hover{color:var(--text)}
+.bk-f button[aria-pressed=true]{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(10,122,255,.35)}
+.tcs{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.tc{min-height:190px;text-align:left;display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:12px;border-radius:16px;background:var(--card);box-shadow:inset 0 0 0 .5px var(--line);min-width:0;overflow:hidden;transition:transform .15s,box-shadow .15s}
+.tc:hover{transform:translateY(-3px);box-shadow:inset 0 0 0 .5px var(--line),0 10px 24px rgba(30,30,80,.16)}
+.tc:active{transform:scale(.96)}
+.tc .kode{max-width:100%;font-size:11px;padding:2px 7px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tc .ti{width:100%;font-size:14px;font-weight:700;letter-spacing:-.01em;line-height:1.25;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;word-break:break-word}
+.tc .s{width:100%;font-size:12px;color:var(--muted);line-height:1.3;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.tc .u{width:100%;font-size:12px;line-height:1.35;color:var(--text);opacity:.8;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;word-break:break-word}
+.tc .bt{margin-top:auto;width:100%;display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.tc .bt .pg{width:100%}
+.tc .bk-lg{font-size:11px;padding:2px 8px}
+@media (max-width:640px){.tcs{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.tc{padding:11px}}
+.pg{display:block;height:6px;border-radius:99px;background:var(--track);overflow:hidden}
+.pg i{display:block;height:100%;border-radius:99px;background:var(--orange);transition:width .3s}
+.tc.full .pg i{background:var(--green)}
+.od-pg{margin-top:0}.od-pg .pg{height:8px}.od-pg small{display:block;margin-top:6px;font-size:12px;color:var(--muted)}
+.ck{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:12px;background:rgba(120,120,128,.09);margin-bottom:8px}
+.ck .bx{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;border:2px solid rgba(120,120,128,.4);color:transparent}
+.ck.ok .bx{background:#28c840;border-color:#28c840;color:#fff}
+.ck .tx{flex:1;min-width:0}.ck .tx b{display:block;font-size:14px}.ck .tx small{display:block;font-size:12px;color:var(--muted)}
+.ck.ok .tx small{color:#1a8a30}
+.ck .opt{font-size:10px;font-weight:700;color:var(--muted);background:var(--track);padding:1px 7px;border-radius:99px;margin-left:6px;vertical-align:middle}
+.ck .bk-act{flex:none;flex-wrap:wrap}
+.ck .lihat{padding:6px 12px;font-size:12px}
+.wn{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--orange);color:#fff;box-shadow:0 2px 6px rgba(255,159,10,.4)}
+.ck:not(.ok) .tx small{color:#b86e00}
+@media (max-width:520px){.ck{flex-wrap:wrap}.ck .bk-act{width:100%;justify-content:flex-start;padding-left:38px}}
+
+/* Pengalih laporan + Buku Kas Umum */
+[hidden]{display:none!important}
+.lp-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:4px;border-radius:14px;background:var(--track);margin-bottom:16px}
+.lp-tabs button{padding:10px 14px;border-radius:10px;font-size:14px;font-weight:600;color:var(--muted);transition:background .15s,color .15s}
+.lp-tabs button:hover{color:var(--text)}
+.lp-tabs button[aria-selected=true]{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(10,122,255,.35)}
+.bku-total{display:flex;align-items:center;gap:16px;margin-bottom:14px;padding:18px 20px}
+.bku-total .ic{margin:0!important;width:48px!important;height:48px!important;border-radius:13px!important;flex:none}
+.bku-total .ic svg{width:24px!important;height:24px!important}
+.bku-total b{font-size:clamp(24px,3.4vw,34px)!important}
+.bku-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
+.bku-stats small,.bku-total small{display:block}
+.bku-stats .delta,.bku-total .delta{display:block;color:var(--muted)}
+.bku-stats b,.bku-total b{word-break:break-word}
+.stat b.neg{color:#c9302c}
+@media(max-width:900px){.bku-stats{grid-template-columns:repeat(2,1fr)}}@media(max-width:420px){.bku-stats{grid-template-columns:1fr}}
+#bkuTabs{display:grid;grid-template-columns:repeat(auto-fit,minmax(54px,1fr));gap:6px;margin-bottom:10px}
+#bkuTabs button{text-align:center;padding:7px 4px;border-radius:99px;background:var(--track);font-size:13px;font-weight:600;transition:background .15s}
+#bkuTabs button:hover{background:var(--line)}
+#bkuTabs button.on{background:var(--accent);color:#fff}
+@media(min-width:900px){#bkuTabs{grid-template-columns:1.9fr repeat(12,1fr)}}
+.bku-filters{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px}
+.bku-filters:has(#bkuThn[hidden]){grid-template-columns:1fr}
+.bku-filters select{width:100%;margin:0}
+.bku-t{min-width:860px;font-size:14px}
+.bku-t th{text-transform:none;letter-spacing:0;font-size:14px;color:var(--text);text-align:center;background:var(--track);border:.5px solid var(--line);padding:7px 9px;white-space:normal}
+.bku-t td{border:.5px solid var(--line);padding:7px 9px;vertical-align:top}
+.bku-t tbody tr:last-child td{border-bottom:.5px solid var(--line)}
+.bku-t td.n{text-align:right;white-space:nowrap}.bku-t td.c{text-align:center}
+.bku-t td.dbt{color:#12822c;font-weight:600}.bku-t td.krd{color:#c9302c;font-weight:600}
+.bku-t tr.tot td{font-weight:700;background:var(--track)}
+.bku-t tr.op td{color:var(--muted);font-style:italic}
+.bku-t td.empty{text-align:center;color:var(--muted)}
+.bsrc{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:99px;white-space:nowrap}
+.bsrc.bk{background:rgba(0,184,217,.16);color:#0891b2}.bsrc.tn{background:rgba(255,94,122,.16);color:#e11d48}
+.bnote{display:block;font-size:11px;color:var(--muted);font-style:italic}
+.bku-foot{font-size:12px;color:var(--muted);margin-top:10px}
+#bkuPrint{display:none}
+#bkuPrint{color:#000;background:#fff;font:12.5px/1.45 Tahoma,Verdana,"Segoe UI",sans-serif;page:bku}
+@page bku{size:A4 landscape;margin:12mm}
+#bkuPrint .pt{text-align:center;font-weight:700;text-decoration:underline;font-size:14px;margin-top:8px}
+#bkuPrint .ps2{text-align:center;margin-bottom:12px}
+#bkuPrint table{width:100%;border-collapse:collapse;min-width:0;font-size:11.5px}
+#bkuPrint th,#bkuPrint td{border:1px solid #000;padding:4px 6px;color:#000;text-transform:none;letter-spacing:0;font-size:11.5px;background:none}
+#bkuPrint th{background:#eee;text-align:center;font-weight:700}
+#bkuPrint td.n{text-align:right;white-space:nowrap}#bkuPrint td.c{text-align:center}
+#bkuPrint tr.tot td{font-weight:700;background:#eee}#bkuPrint tr.op td{font-style:italic}
+#bkuPrint .sg{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;text-align:center;margin-top:22px;break-inside:avoid}#bkuPrint .sg .nm{margin-top:64px}
+#bkuPrint .pbody{padding:10px 0}
+@media print{
+  body.pb>*:not(#bkuPrint){display:none!important}
+  body.pb #bkuPrint{display:block!important}
+  body.pb #bkuPrint th:last-child,body.pb #bkuPrint td:last-child{display:table-cell!important}
+  body.pb #bkuPrint th,body.pb #bkuPrint td{padding:4px 6px}
+}
+</style>
+<script>if(!('PageSwapEvent' in window))document.documentElement.classList.add('pt-fb');</script>
+</head>
+<body>
+
+<header class="nav">
+  <div class="brand">
+    <span class="sch-logo" id="navLogo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-6 9 6M5 10v9h14v-9M9 19v-5h6v5"/></svg></span>
+    <span class="sch-name"><b id="navName">SMP Negeri 1 Contoh</b><small id="navSub">Kab. Contoh, Prov. Contoh</small></span>
+  </div>
+  <span class="sp"></span>
+  <div class="acct" aria-label="Akun masuk">
+    <div><b id="acName">Kepala Sekolah</b><small id="acRole">Kepala Sekolah</small></div>
+    <span class="avatar" id="acAva">KS</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="head">
+    <div><h1>Laporan</h1><p>Arsip Surat Order, Kwitansi, SPPD, NOTA, BAST, Bukti Pajak, Tanda Terima, Bukti Photo, kelengkapan berkas, dan Buku Kas Umum</p></div>
+  </div>
+
+  <div class="lp-tabs" role="tablist" aria-label="Jenis laporan"><button type="button" role="tab" id="lpT1" data-lp="berkas" aria-selected="true">Kelengkapan Berkas</button><button type="button" role="tab" id="lpT2" data-lp="bku" aria-selected="false">Buku Kas Umum</button></div>
+
+  <div id="lpBerkas">
+  <section class="panel box" id="bkBox">
+    <div class="ph"><span class="ic" style="background:linear-gradient(160deg,#c77dff,#7b2ff7)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span><div><h2>Kelengkapan Berkas Pembayaran</h2></div><span class="cnt" id="bkCnt">0 data</span></div>
+    <div class="bk-bar"><label class="bk-sq"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.500-3.500"/></svg><input id="bkQ" type="search" placeholder="Cari nomor order, nomor BKU, toko, kegiatan…" aria-label="Cari" autocomplete="off"></label>
+      <select class="in bk-y" id="bkY" aria-label="Tahun"></select>
+      <div class="bk-tw bk-tm"><button class="bk-nav" id="bkPrev" type="button" aria-label="Geser bulan ke kiri"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button><div class="bk-f" id="bkF" role="group" aria-label="Filter bulan"><button type="button" data-f="all" aria-pressed="true">Semua</button></div><button class="bk-nav" id="bkNext" type="button" aria-label="Geser bulan ke kanan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button></div></div>
+    <div class="tcs" id="bkCards"></div>
+  </section>
+  </div>
+
+  <div id="lpBku" hidden>
+    <section class="panel stat bku-total" id="bkuTotal"></section>
+    <section class="bku-stats" id="bkuStats"></section>
+    <section class="panel box" id="bkuBox">
+      <div class="ph"><span class="ic" style="background:linear-gradient(160deg,#a78bfa,#5e5ce6)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4.5A1.5 1.5 0 016.5 3H19v15H6.5A1.5 1.5 0 005 19.5zM5 19.5A1.5 1.5 0 006.5 21H19v-3M9 8h6M9 12h6"/></svg></span><div><h2>Riwayat Buku Kas Umum</h2></div><span class="cnt" id="bkuCnt">0 data</span></div>
+      <div id="bkuTabs" role="tablist" aria-label="Filter bulan"></div>
+      <div class="bku-filters"><select class="in" id="bkuKas" aria-label="Filter kas"><option value="">Semua Kas</option><option value="bk">Kas Bank</option><option value="tn">Kas Tunai</option></select><select class="in" id="bkuThn" aria-label="Tahun" hidden></select></div>
+      <div class="tw"><table class="bku-t"><thead><tr><th>No</th><th>Tanggal</th><th>Kas</th><th>Uraian</th><th>No Bukti</th><th>Debet/Penerimaan (Rp.)</th><th>Kredit/Pengeluaran (Rp.)</th><th>Saldo (Rp.)</th></tr></thead><tbody id="bkuTb"></tbody><tfoot id="bkuTf"></tfoot></table></div>
+      <div class="bku-foot">Penarikan tunai dari bank (mutasi antar kas) tetap tampil dan memengaruhi saldo masing-masing kas, tetapi tidak dihitung pada Total Penerimaan/Pengeluaran agar tidak terhitung ganda.</div>
+      <div class="state" id="bkuMsg" role="alert" style="padding:8px;color:var(--red)"></div>
+    </section>
+  </div>
+</main>
+<div id="bkuPrint"></div>
+
+<div class="ov" id="mDok" aria-hidden="true"><div class="mcard od" id="mDokC" role="dialog" aria-modal="true" aria-labelledby="mDokT"></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<div class="dock">
+  <nav aria-label="Aksi halaman">
+    <a class="d" href="adminutama.html"><span class="ic" style="background:linear-gradient(160deg,#4da3ff,#0a5fe0)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8M5 10v10h14V10M10 20v-6h4v6"/></svg></span>Beranda</a>
+    <button class="d" type="button" id="bkuCetak" hidden><span class="ic" style="background:linear-gradient(160deg,#5be37a,#1fa23c)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6M6 18H4v-7h16v7h-2M7 14h10v7H7z"/></svg></span>Cetak</button>
+  </nav>
+</div>
+
+<script src="config.js"></script>
+<script>
+/* Ambil logo & nama sekolah dari Supabase untuk navbar */
+(function(){
+  var SB_URL=window.SIMPELPAY_CONFIG.SUPABASE_URL;
+  var SB_KEY=window.SIMPELPAY_CONFIG.SUPABASE_ANON_KEY;
+  var CK='simpelpay_nav_sekolah';
+  var logoEl=document.getElementById('navLogo'),nameEl=document.getElementById('navName'),subEl=document.getElementById('navSub');
+  var dummyLogo=logoEl.innerHTML;
+  var acName=document.getElementById('acName'),acAva=document.getElementById('acAva');
+  function esc(t){return String(t).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+  function apply(d){
+    if(!d)return;
+    if(d.nama)nameEl.textContent=d.nama;
+    if(d.kepsek){
+      acName.textContent=d.kepsek;acName.title=d.nip?('NIP '+d.nip):'';
+      var p=String(d.kepsek).replace(/,.*$/,'').trim().split(/\s+/).filter(Boolean);
+      acAva.textContent=((p[0]||'K')[0]+(p.length>1?p[1][0]:'')).toUpperCase();
+    }
+    subEl.textContent=d.sub||'';
+    if(d.logo){
+      var img=new Image();img.alt='';
+      img.onload=function(){logoEl.innerHTML='';logoEl.appendChild(img)};
+      img.onerror=function(){logoEl.innerHTML=dummyLogo};
+      img.src=d.logo;
+    }else{logoEl.innerHTML=dummyLogo}
+  }
+  try{apply(JSON.parse(localStorage.getItem(CK)||'null'))}catch(e){}
+  fetch(SB_URL+'/rest/v1/identitas_sekolah?id=eq.1&select=nama_sekolah,kabupaten,provinsi,logo_url,updated_at,nama_kepsek,nip',
+    {headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY}})
+    .then(function(r){return r.ok?r.json():Promise.reject(r.status)})
+    .then(function(rows){
+      var r=rows&&rows[0];if(!r)return;
+      var d={nama:r.nama_sekolah,kepsek:r.nama_kepsek||'',nip:r.nip||'',sub:[r.kabupaten,r.provinsi].filter(Boolean).join(', '),
+             logo:r.logo_url?r.logo_url+'?v='+encodeURIComponent(r.updated_at||''):''};
+      apply(d);
+      try{localStorage.setItem(CK,JSON.stringify(d))}catch(e){}
+    })
+    .catch(function(){});
+
+})();
+</script>
+<script>
+/* Fallback transisi untuk browser tanpa dukungan View Transitions */
+(function(){
+  var h=document.documentElement;
+  if(!h.classList.contains('pt-fb'))return;
+  window.addEventListener('pageshow',function(e){if(e.persisted)h.classList.remove('pt-leave')});
+  document.addEventListener('click',function(e){
+    var a=e.target.closest&&e.target.closest('a[href]');
+    if(!a||e.defaultPrevented||e.button!==0||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;
+    if(a.target&&a.target!=='_self')return;
+    var u=new URL(a.href,location.href);
+    if(u.origin!==location.origin||(u.pathname===location.pathname&&u.search===location.search))return;
+    if(window.matchMedia('(prefers-reduced-motion:reduce)').matches)return;
+    e.preventDefault();h.classList.add('pt-leave');
+    setTimeout(function(){location.href=a.href},220);
+  });
+})();
+</script>
+<script>
+/* Laporan: kartu per pembayaran, klik -> modal checklist berkas */
+(function(){
+  var SB_URL=window.SIMPELPAY_CONFIG.SUPABASE_URL,SB_KEY=window.SIMPELPAY_CONFIG.SUPABASE_ANON_KEY;
+  function $(i){return document.getElementById(i)}
+  function esc(t){return String(t==null?'':t).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+  function tgl(d){var a=String(d||'').split('-');return a.length===3?a[2]+'/'+a[1]+'/'+a[0]:esc(d||'—')}
+  function kk(v){return String(v==null?'':v).toLowerCase()}
+  function get(t,q){return fetch(SB_URL+'/rest/v1/'+t+'?'+q,{headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY}}).then(function(r){return r.ok?r.json():Promise.reject(new Error('HTTP '+r.status))})}
+  function JH(x){var h={apikey:SB_KEY,Authorization:'Bearer '+SB_KEY,'Content-Type':'application/json'};for(var k in x)h[k]=x[k];return h}
+  function jerr(r){return r.text().then(function(x){var m=x;try{var j=JSON.parse(x);m=j.message||j.error||x}catch(e){}console.error('Supabase',r.status,x);throw new Error(m||('HTTP '+r.status))})}
+  var tm;function toast(m){var t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(tm);tm=setTimeout(function(){t.classList.remove('show')},4200)}
+
+  var D=[{k:'surat',n:'Surat Order',t:'surat_order'},{k:'kwitansi',n:'Kwitansi',t:'kwitansi'},{k:'nota',n:'NOTA',t:'nota'},
+    {k:'bast',n:'BAST',t:'berita_acara'},{k:'pajak',n:'Bukti Pajak',t:'nota_pajak'},{k:'tanda',n:'Tanda Terima',t:'tanda_terima'},
+    {k:'foto',n:'Bukti Photo',t:'foto_kegiatan'},{k:'sppd',n:'SPPD',t:'sppd',opt:1}],
+    NEED=D.filter(function(d){return !d.opt}),N=NEED.length;
+  var trx=null,idx={},filt='all',openK=null;
+
+  function find(k){return trx&&trx.filter&&trx.filter(function(t){return String(t.nomor_bukti)===k})[0]}
+  function rec(d,t){return idx[d.k]&&idx[d.k][kk(t.nomor_bukti)]}
+  function has(d,t){var r=rec(d,t);return !!(r&&(r.file_url||r.url))}
+  function stat(t){return NEED.filter(function(d){return has(d,t)}).length}
+
+  function draw(){
+    var box=$('bkCards'),q=$('bkQ').value.trim().toLowerCase();
+    if(!trx||trx.err){$('bkCnt').textContent='0 data';box.innerHTML='<div class="state" style="grid-column:1/-1">'+(trx?'Gagal memuat data.':'Memuat data…')+'</div>';return}
+    var rows=trx.filter(function(t){
+      var c=stat(t);
+      var d8=String(t.tanggal||'');if(d8.slice(0,4)!==yr||(filt!=='all'&&d8.slice(5,7)!==filt))return false;
+      return !q||[t.nomor_order,t.nomor_bukti,t.nama_toko,t.uraian,t.penerima].join(' ').toLowerCase().indexOf(q)>-1});
+    $('bkCnt').textContent=rows.length+' data';
+    box.innerHTML=rows.length?rows.map(function(t){var c=stat(t),f=c===N;
+      return '<button type="button" class="tc'+(f?' full':'')+'" data-k="'+esc(t.nomor_bukti)+'" title="'+esc(t.nama_toko||'')+'"><span class="kode">'+esc(t.nomor_bukti)+'</span>'
+        +'<span class="ti">'+esc(t.nomor_order||'—')+'</span><span class="s">'+esc(t.nama_toko||'—')+'</span><span class="u" title="'+esc(t.uraian||'')+'">'+esc(t.uraian||'Uraian belum diisi')+'</span>'
+        +'<span class="bt"><span class="pg"><i style="width:'+Math.round(c/N*100)+'%"></i></span><span class="bk-lg'+(f?' full':'')+'">'+c+'/'+N+' berkas</span></span></button>'}).join('')
+      :'<div class="state" style="grid-column:1/-1">'+(q?'Tidak ada hasil untuk "'+esc(q)+'".':'Belum ada data.')+'</div>';
+  }
+
+  var CK='<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>';
+  var WN='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 6v7M12 18v.01"/></svg>';
+  function modal(){
+    var t=find(openK);if(!t)return;
+    var c=stat(t),f=c===N;
+    var list=D.map(function(d){
+      var r=rec(d,t),ok=has(d,t),url=r&&(r.file_url||r.url),act='';
+      if(url)act='<a class="lihat" href="'+esc(url)+'" target="_blank" rel="noopener">Lihat</a>';
+      else act='<span class="wn" role="img" title="Belum diunggah oleh bendahara" aria-label="Belum diunggah oleh bendahara">'+WN+'</span>';
+      var sub=ok?'Sudah diunggah':'Belum diunggah bendahara';
+      return '<div class="ck'+(ok?' ok':'')+'"><span class="bx">'+CK+'</span><span class="tx"><b>'+d.n+(d.opt?'<span class="opt">OPSIONAL</span>':'')+'</b><small>'+sub+'</small></span><span class="bk-act">'+act+'</span></div>'}).join('');
+    $('mDokC').innerHTML='<div class="od-hd"><span class="od-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span>'
+      +'<div class="od-t"><small>'+esc(t.nomor_bukti)+'</small><h2 id="mDokT">'+esc(t.nomor_order||'Berkas')+'</h2></div>'
+      +'<span class="od-st '+(f?'s':'p')+'">'+(f?'Lengkap':'Belum lengkap')+'</span>'
+      +'<button class="od-x" type="button" id="mDokX" aria-label="Tutup"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>'
+      +'<div class="od-grid"><div class="oc"><small>Nama Toko</small><b>'+esc(t.nama_toko||'—')+'</b></div><div class="oc"><small>Tanggal</small><b>'+tgl(t.tanggal)+'</b></div><div class="oc"><small>Penerima</small><b>'+esc(t.penerima||'—')+'</b></div>'
+      +(t.uraian?'<div class="oc full"><small>Uraian</small><b>'+esc(t.uraian)+'</b></div>':'')+'</div>'
+      +'<div class="od-sec"><h3>Checklist Berkas</h3><span class="cnt">'+c+'/'+N+'</span></div>'
+      +'<div class="od-pg"><span class="pg"><i style="width:'+Math.round(c/N*100)+'%;background:'+(f?'var(--green)':'var(--orange)')+'"></i></span><small>'+(f?'Semua berkas sudah lengkap.':(N-c)+' berkas belum ada.')+'</small></div>'
+      +'<div style="margin-top:14px">'+list+'</div>'
+      +'<div class="mfoot"><button class="btn" type="button" id="mDokX2">Tutup</button></div>';
+  }
+  function openM(k){openK=k;modal();var o=$('mDok');o.classList.add('open');o.setAttribute('aria-hidden','false');var x=$('mDokX');if(x)x.focus()}
+  function closeM(){openK=null;var o=$('mDok');o.classList.remove('open');o.setAttribute('aria-hidden','true')}
+  $('bkCards').addEventListener('click',function(e){var b=e.target.closest('.tc');if(b)openM(b.dataset.k)});
+  $('mDok').addEventListener('click',function(e){
+    if(e.target===this||e.target.closest('#mDokX,#mDokX2'))return closeM();
+  });
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&openK)closeM()});
+  $('bkQ').addEventListener('input',draw);
+  var BLN=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+  var yr=String(new Date().getFullYear());
+  function tabs(){
+    var ys={};ys[yr]=1;
+    (trx&&trx.filter?trx:[]).forEach(function(t){var y=String(t.tanggal||'').slice(0,4);if(/^\d{4}$/.test(y))ys[y]=1});
+    $('bkY').innerHTML=Object.keys(ys).sort().reverse().map(function(y){return '<option value="'+y+'"'+(y===yr?' selected':'')+'>'+y+'</option>'}).join('');
+    $('bkF').innerHTML='<button type="button" data-f="all" aria-pressed="'+(filt==='all')+'">Semua</button>'+BLN.map(function(n,i){
+      var m=('0'+(i+1)).slice(-2);return '<button type="button" data-f="'+m+'" aria-pressed="'+(filt===m)+'">'+n+'</button>'}).join('');
+    layout();
+  }
+  /* Tab bulan dibagi per halaman sesuai lebar, jadi tidak ada tombol yang terpotong */
+  var pg0=0,pages=[],pi=0;
+  function layout(){
+    var f=$('bkF'),b=[].slice.call(f.children),W=f.clientWidth-8,i=0,w,j;
+    b.forEach(function(x){x.hidden=false});pages=[];
+    while(i<b.length){w=0;j=i;while(j<b.length&&(j===i||w+6+b[j].offsetWidth<=W)){w+=(j>i?6:0)+b[j].offsetWidth;j++}pages.push([i,j]);i=j}
+    pi=0;pages.forEach(function(p,k){if(p[0]<=pg0)pi=k});
+    var p=pages[pi]||[0,0];pg0=p[0];
+    b.forEach(function(x,k){x.hidden=k<p[0]||k>=p[1]});
+    $('bkPrev').disabled=pi<=0;$('bkNext').disabled=pi>=pages.length-1;
+  }
+  $('bkPrev').addEventListener('click',function(){if(pi>0){pg0=pages[pi-1][0];layout()}});
+  $('bkNext').addEventListener('click',function(){if(pi<pages.length-1){pg0=pages[pi+1][0];layout()}});
+  window.addEventListener('resize',layout);window.addEventListener('load',layout);
+  $('bkY').addEventListener('change',function(){yr=this.value;draw()});
+  $('bkF').addEventListener('click',function(e){var b=e.target.closest('button[data-f]');if(!b)return;filt=b.dataset.f;tabs();draw()});
+
+  function load(){
+    trx=null;tabs();draw();
+    Promise.all([get('transaksi_pembayaran','select=id,nomor_order,nomor_bukti,tanggal,nama_toko,uraian,penerima&order=tanggal.desc,id.desc')]
+      .concat(D.map(function(d){return get(d.t,'select=*&order=id.desc').catch(function(){return []})})))
+    .then(function(z){
+      idx={};D.forEach(function(d,i){var m=idx[d.k]={};z[i+1].forEach(function(o){
+        var key=kk(d.k==='foto'?o.nomor_bukti:o.nomor_bku);if(!m[key]||(d.k==='foto'&&!m[key].url&&o.url))m[key]=o})});
+      trx=z[0]||[];
+    }).catch(function(){trx={err:1}}).then(function(){tabs();draw();if(openK)modal()});
+  }
+  document.addEventListener('surat-saved',load);
+  load();
+})();
+</script>
+<script>
+/* Laporan Buku Kas Umum (gabungan buku_bank + kas_tunai) */
+(function(){
+  var SB_URL=window.SIMPELPAY_CONFIG.SUPABASE_URL,SB_KEY=window.SIMPELPAY_CONFIG.SUPABASE_ANON_KEY;
+  function $(i){return document.getElementById(i)}
+  function esc(t){return String(t==null?'':t).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+  function get(t,q){return fetch(SB_URL+'/rest/v1/'+t+'?'+q,{headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY}}).then(function(r){return r.ok?r.json():r.json().catch(function(){return {}}).then(function(j){throw new Error(j.message||('HTTP '+r.status))})})}
+  function pad(n){return String(n).padStart(2,'0')}
+  function rp(n){n=Math.round(Number(n)||0);return (n<0?'-':'')+String(Math.abs(n)).replace(/\B(?=(\d{3})+(?!\d))/g,'.')}
+  function rp0(n){return 'Rp '+rp(n)}
+  function tg(s){var a=s.split('-');return a[2]+'/'+a[1]+'/'+a[0]}
+  var BLN=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'],BS=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+  var IC={down:'<path d="M12 3v12M7 10l5 5 5-5M5 21h14"/>',up:'<path d="M12 21V9M7 14l5-5 5 5M5 3h14"/>',wallet:'<rect x="2.5" y="5" width="19" height="14" rx="3"/><path d="M2.5 10h19M6.5 15h4"/>',
+    bank:'<path d="M3 10l9-6 9 6H3zM5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 21h18"/>',cash:'<rect x="2.5" y="6" width="19" height="12" rx="2.5"/><circle cx="12" cy="12" r="2.8"/><path d="M6 9.5v.01M18 14.5v.01"/>'};
+  function svg(n){return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+IC[n]+'</svg>'}
+
+  var data=null,SK=null,PV=null,month='',loaded=false;
+
+  /* Pengalih laporan */
+  function pilih(k){
+    var b=k==='bku';
+    $('lpBerkas').hidden=b;$('lpBku').hidden=!b;$('bkuCetak').hidden=!b;
+    $('lpT1').setAttribute('aria-selected',String(!b));$('lpT2').setAttribute('aria-selected',String(b));
+    if(b&&!loaded){loaded=true;muatData()}
+  }
+  $('lpT1').onclick=function(){pilih('berkas')};$('lpT2').onclick=function(){pilih('bku')};
+
+  /* Tab bulan */
+  $('bkuTabs').innerHTML='<button type="button" role="tab" class="on" data-m="">Semua Bulan</button>'+BS.map(function(b,i){return '<button type="button" role="tab" data-m="'+(i+1)+'">'+b+'</button>'}).join('');
+  $('bkuTabs').onclick=function(e){var t=e.target.closest('button[data-m]');if(!t)return;
+    [].forEach.call($('bkuTabs').children,function(x){x.classList.toggle('on',x===t)});month=t.dataset.m;$('bkuThn').hidden=month==='';render()};
+  $('bkuThn').onchange=render;$('bkuKas').onchange=render;
+
+  function muatData(){
+    $('bkuTb').innerHTML='<tr><td colspan="8" class="empty">Memuat data…</td></tr>';
+    Promise.all([get('buku_bank','select=*&order=tanggal.asc,created_at.asc'),get('kas_tunai','select=*&order=tanggal.asc,created_at.asc'),
+      get('identitas_sekolah','id=eq.1&select=*').catch(function(){return []})])
+    .then(function(z){
+      data=z[0].map(function(r){r.src='bk';r.mut=!!r.kas_tunai_id;return r}).concat(z[1].map(function(r){r.src='tn';r.mut=r.jenis==='penarikan'&&!r.transaksi_id;return r}));
+      data.sort(function(a,b){if(a.tanggal!==b.tanggal)return a.tanggal<b.tanggal?-1:1;var x=String(a.created_at||''),y=String(b.created_at||'');if(x!==y)return x<y?-1:1;return a.src==='bk'?-1:1});
+      SK=z[2][0]||{};
+      var now=String(new Date().getFullYear()),ys={};ys[now]=1;data.forEach(function(r){ys[r.tanggal.slice(0,4)]=1});
+      $('bkuThn').innerHTML=Object.keys(ys).sort().reverse().map(function(y){return '<option'+(y===now?' selected':'')+'>'+y+'</option>'}).join('');
+      render();
+    }).catch(function(e){$('bkuTb').innerHTML='<tr><td colspan="8" class="empty">Gagal memuat: '+esc(e.message)+'</td></tr>'});
+  }
+
+  function render(){
+    if(!data)return;
+    var all=month==='',now=new Date(),y=now.getFullYear(),m=now.getMonth()+1;
+    if(!all){y=+$('bkuThn').value;m=+month}
+    var akhir=all?now.getDate():new Date(y,m,0).getDate(),first=all?'':y+'-'+pad(m)+'-01',last=y+'-'+pad(m)+'-'+pad(akhir);
+    if(all)last=now.getFullYear()+'-'+pad(m)+'-'+pad(akhir);
+    var bulanTxt=all?'Semua bulan':BLN[m-1]+' '+y,tglTxt=akhir+' '+BLN[m-1]+' '+y,per=all?'seluruh transaksi':BLN[m-1]+' '+y,F=$('bkuKas').value;
+    var saldo=0,sb=0,st=0,awal=0,sd=0,sk=0,no=0,nd=0,nk=0,sdA=0,skA=0,fs=0,pr=[],h='';
+    data.forEach(function(r){
+      if(!all&&r.tanggal>last)return;
+      var d=Number(r.debet)||0,k=Number(r.kredit)||0;
+      saldo+=d-k;if(r.src==='bk')sb+=d-k;else st+=d-k;
+      var tampil=!F||r.src===F;if(tampil)fs+=d-k;
+      if(r.tanggal<first){awal=fs;return}
+      if(!r.mut){sdA+=d;skA+=k;if(d>0)nd++;if(k>0)nk++}
+      if(!tampil)return;
+      if(F||!r.mut){sd+=d;sk+=k}
+      var nama=r.src==='bk'?'Bank':'Tunai';no++;
+      pr.push({no:no,tgl:tg(r.tanggal),uraian:(F?'':'['+nama+'] ')+r.uraian,bukti:r.no_bukti,debet:d,kredit:k,saldo:fs});
+      h+='<tr><td class="c">'+no+'</td><td class="c">'+tg(r.tanggal)+'</td><td class="c"><span class="bsrc '+r.src+'">'+nama+'</span></td><td>'+esc(r.uraian)+(r.mut?'<span class="bnote">Mutasi antar kas (Bank ↔ Tunai)</span>':'')+'</td><td>'+esc(r.no_bukti)+'</td><td class="n dbt">'+(d>0?rp(d):'')+'</td><td class="n krd">'+(k>0?rp(k):'')+'</td><td class="n">'+rp(fs)+'</td></tr>';
+    });
+    if(awal)pr.unshift({op:1,saldo:awal});
+    PV={bulan:bulanTxt,tgl:tglTxt,rows:pr,sd:sd,sk:sk,saldo:fs,F:F};
+    if(awal)h='<tr class="op"><td></td><td></td><td></td><td>Saldo bulan lalu</td><td></td><td></td><td></td><td class="n">'+rp(awal)+'</td></tr>'+h;
+    $('bkuTb').innerHTML=h||'<tr><td colspan="8" class="empty">Belum ada transaksi.</td></tr>';
+    $('bkuTf').innerHTML='<tr class="tot"><td colspan="5" class="c">Jumlah</td><td class="n dbt">'+rp(sd)+'</td><td class="n krd">'+rp(sk)+'</td><td class="n">'+rp(fs)+'</td></tr>';
+    $('bkuCnt').textContent=no+' data';
+    $('bkuTotal').innerHTML='<div class="ic" style="background:linear-gradient(160deg,#a78bfa,#5e5ce6)">'+svg('wallet')+'</div><div><small>Total Saldo Akhir</small><b class="'+(saldo<0?'neg':'')+'">'+rp0(saldo)+'</b><span class="delta">Gabungan Kas Bank '+rp0(sb)+' + Kas Tunai '+rp0(st)+' · '+per+'</span></div>';
+    var kt=[['Total Penerimaan',rp0(sdA),nd+' transaksi penerimaan','down','linear-gradient(160deg,#5be37a,#1fa23c)',''],
+      ['Total Pengeluaran',rp0(skA),nk+' transaksi pengeluaran','up','linear-gradient(160deg,#ff7a8a,#e11d48)',''],
+      ['Saldo Kas Bank',rp0(sb),'Saldo akhir '+per,'bank','linear-gradient(160deg,#22d3ee,#0891b2)',sb<0?'neg':''],
+      ['Saldo Kas Tunai',rp0(st),'Saldo akhir '+per,'cash','linear-gradient(160deg,#ffb454,#f0780a)',st<0?'neg':'']];
+    $('bkuStats').innerHTML=kt.map(function(x){return '<div class="panel stat"><div class="ic" style="background:'+x[4]+'">'+svg(x[3])+'</div><small>'+x[0]+'</small><b class="'+x[5]+'">'+x[1]+'</b><span class="delta">'+x[2]+'</span></div>'}).join('');
+  }
+
+  /* Cetak */
+  function pre(v,k){v=String(v||'').trim();return v&&!/^(kab|kota|prov|kec)/i.test(v)?k+' '+v:v}
+  function cetak(){
+    if(!PV||!SK)return;
+    var alamat=[SK.jalan,SK.kelurahan,pre(SK.kecamatan,'Kec.'),pre(SK.kabupaten,'Kab.')].map(function(x){return String(x||'').trim()}).filter(Boolean).join(', ');
+    var email=String(SK.email||'').trim(),logo=SK.logo_url?SK.logo_url+'?v='+encodeURIComponent(SK.updated_at||''):'logo.png';
+    var T={};try{T=JSON.parse(localStorage.getItem('kas_ttd')||'{}')}catch(e){}
+    var dots='.'.repeat(38),kepala=SK.nama_kepsek||SK.kepala_sekolah||SK.nama_kepala_sekolah||T.kepala||'';
+    function nm(v){return '('+(esc(v)||dots)+')'}
+    var lg=function(src){return '<div class="sr-logo"><img alt="" src="'+esc(src)+'" onerror="this.style.visibility=\'hidden\'"></div>'};
+    var rows=PV.rows.map(function(r){return r.op?'<tr class="op"><td></td><td></td><td>Saldo bulan lalu</td><td></td><td></td><td></td><td class="n">'+rp(r.saldo)+'</td></tr>'
+      :'<tr><td class="c">'+r.no+'</td><td class="c">'+r.tgl+'</td><td>'+esc(r.uraian)+'</td><td>'+esc(r.bukti)+'</td><td class="n">'+(r.debet>0?rp(r.debet):'')+'</td><td class="n">'+(r.kredit>0?rp(r.kredit):'')+'</td><td class="n">'+rp(r.saldo)+'</td></tr>'}).join('')||'<tr><td colspan="7" class="c">Belum ada transaksi.</td></tr>';
+    var judul='BUKU KAS UMUM (BKU)'+(PV.F==='bk'?' — KAS BANK':PV.F==='tn'?' — KAS TUNAI':'');
+    $('bkuPrint').innerHTML='<div class="sr-kop">'+lg('logokab.png')+'<div class="sr-kt"><div class="b">PEMERINTAH KABUPATEN BANGKA BARAT</div><div class="b">DINAS PENDIDIKAN KEPEMUDAAN DAN OLAHRAGA</div><div class="b">'+esc(String(SK.nama_sekolah||'').toUpperCase())+'</div>'
+      +(alamat?'<div class="i">Alamat : '+esc(alamat)+'</div>':'')+(email?'<div class="u">Email : '+esc(email)+'</div>':'')+'</div>'+lg(logo)+'</div><hr class="sr-hr">'
+      +'<div class="pbody"><div class="pt">'+judul+'</div><div class="ps2">Bulan : '+esc(PV.bulan)+'</div>'
+      +'<table><thead><tr><th>No</th><th>Tanggal</th><th>Uraian</th><th>No Bukti</th><th>Debet/Penerimaan (Rp.)</th><th>Kredit/Pengeluaran (Rp.)</th><th>Saldo (Rp.)</th></tr></thead><tbody>'+rows+'</tbody>'
+      +'<tfoot><tr class="tot"><td colspan="4" class="c">Jumlah</td><td class="n">'+rp(PV.sd)+'</td><td class="n">'+rp(PV.sk)+'</td><td class="n">'+rp(PV.saldo)+'</td></tr></tfoot></table>'
+      +'<div class="sg"><div>Mengetahui</div><div></div><div>'+(esc(T.tempat||SK.kabupaten)||'..............')+', '+esc(PV.tgl)+'</div>'
+      +'<div>Kepala '+esc(SK.nama_sekolah||'')+'<div class="nm">'+nm(kepala)+'</div></div><div>Ketua P2SP<div class="nm">'+nm(T.ketua)+'</div></div><div>Bendahara<div class="nm">'+nm(T.bend)+'</div></div></div></div>';
+    document.body.classList.add('pb');setTimeout(function(){window.print()},60);
+  }
+  $('bkuCetak').onclick=cetak;
+  window.addEventListener('afterprint',function(){document.body.classList.remove('pb');$('bkuPrint').innerHTML=''});
+})();
+</script>
+</body>
+</html>
