@@ -1,9 +1,9 @@
 {
-  "id": "/Simpel-Pay-SD-SMP/",
+  "id": "/RevitBook/",
   "name": "SIMPEL-PAY",
   "short_name": "SIMPEL-PAY",
-  "start_url": "./index.html",
-  "scope": "./",
+  "start_url": "/RevitBook/index.html",
+  "scope": "/RevitBook/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#667eea",
