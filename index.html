@@ -471,7 +471,15 @@ dialog{--text:#1d1d1f;--muted:#6e6e73;--accent:#0a7aff;--accent-2:#0062d6;--line
 
 
              <!-- 🔥 BANNER INSTALL PWA -->
-<div id="installBanner" style="display:none;position:fixed;left:16px;right:16px;bottom:16px;z-index:9999;max-width:480px;margin:0 auto;background:#fff;color:#1d1d1f;border-radius:14px;padding:14px 16px;box-shadow:0 8px 30px rgba(0,0,0,.25);align-items:center;justify-content:space-between;gap:12px;font-family:sans-serif">
+<style>
+#installBanner{display:none;position:fixed;top:calc(env(safe-area-inset-top,0px) + 46px);left:16px;right:16px;z-index:9999;max-width:480px;margin:0 auto;background:#fff;color:#1d1d1f;border-radius:14px;padding:14px 16px;box-shadow:0 8px 24px rgba(0,0,0,.18);align-items:center;justify-content:space-between;gap:12px;font-family:sans-serif;transition:transform .25s ease,box-shadow .25s ease;animation:ibIn .35s ease both}
+#installBanner:hover{transform:translateY(-4px);box-shadow:0 16px 38px rgba(0,0,0,.28)}
+#installBanner button{transition:transform .15s ease,filter .15s ease}
+#installBanner #btnInstall:hover{transform:translateY(-1px);filter:brightness(1.08)}
+@keyframes ibIn{from{opacity:0;transform:translateY(-14px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){#installBanner{animation:none;transition:none}#installBanner:hover{transform:none}}
+</style>
+<div id="installBanner">
   <span>Install <b>Revitbook</b> di perangkat Anda?</span>
   <span style="white-space:nowrap">
     <button id="btnInstall" style="background:#667eea;color:#fff;border:0;border-radius:8px;padding:8px 14px;cursor:pointer">Install</button>
